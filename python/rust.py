@@ -24,3 +24,9 @@ class Functions:
 func = Functions
 
 get_pkg_ver = func.new()
+
+hide_console_window = func.new()
+
+pip_install = func.new()
+
+get_test_text = func.new()
