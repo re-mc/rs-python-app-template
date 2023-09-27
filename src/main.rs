@@ -1,10 +1,12 @@
 // Hide console window (only for windows)
-//#![windows_subsystem = "windows"]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
 
 use std::process::Command;
+use crate::py_tools::inject_module;
+
+mod py_tools;
 
 
 // define the projects version from cargo
@@ -37,6 +39,7 @@ fn hide_console_window() {
 }
 
 
+// Creates a popup window
 fn show_popup(msg_title: String, message: String) {
 	use std::ptr::null_mut as NULL;
 	use winapi::um::winuser;
@@ -86,10 +89,7 @@ fn main() -> PyResult<()> {
 		rust_backend.add_function(wrap_pyfunction!(hide_console_window, rust_backend)?)?;
 
         // Inject the module into python
-        let sys = PyModule::import(py, "sys")?;
-        let py_modules: &PyDict = sys.getattr("modules")?.downcast()?;
-
-        py_modules.set_item("rust", rust_backend)?;
+        inject_module("rust", rust_backend)?;
 
         // Run the python main function in the python file
         let app: Py<PyAny> = PyModule::from_code(py, py_app, "app.py", "app")?
